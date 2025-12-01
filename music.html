@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            box-sizing: border-box;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .player {
+            background-color: #fff;
+            width: 400px;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .cover img {
+            width: 300px;
+            height: 300px;
+            border-radius: 20px;
+            margin-top: 15px;
+            
+            /* margin-left: 10px; */
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            
+            margin: 10px 0 5px 0;
+        }
+
+        .artist {
+            font-size: 13px;
+            color: gray;
+            margin-bottom: 20px;
+        }
+
+        #progresscontainer {
+            background: #ddd;
+            height: 6px;
+            border-radius: 10px;
+            overflow: hidden;
+          margin: 15px 0;
+          width: 100%;
+          cursor: pointer;
+        }
+
+        #progress {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(to right, #667eea, #764ba2);
+        }
+
+        .time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        button {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            background: #f3f3f3;
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .play {
+            width: 70px;
+            height: 70px;
+            font-size: 26px;
+            background: #667eea;
+            color: white;
+        }
+
+        .play:hover {
+            background: #764ba2;
+        }
+        #fast,#rewind{
+            font-size: 14px;
+        }
+        .volume-box{
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        #volume{
+            width: 150px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="player">
+        <div class="cover">
+            <img src="" id="cover">
+
+        </div>
+        <h2 id="title">Song</h2>
+        <p id="artist">Artist</p>
+
+
+     <div class="progresscontainer" id="progresscontainer">
+    <div class="progress" id="progress"></div>
+</div>
+        <div class="time">
+            <span id="currenttime">0:00</span>
+            <span id="duration">0:00</span>
+        </div>
+
+        <div class="controls">
+            <button id="prev">⏮</button>
+           <button id="rewind">⏪ 5s</button>
+          
+            <button id="play" class="play">▶</button>
+             <button id="fast">⏩ 5s</button>
+            <button id="next">⏭</button>
+        </div>
+        <div class="volume-box">
+            <span>🔊</span>
+            <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+        </div>
+        <audio src="" id="audio"></audio>
+
+    </div>
+    <script>
+        const audio = document.getElementById("audio");
+        const prevbtn = document.getElementById("prev");
+        const playbtn = document.getElementById("play");
+        const nextbtn = document.getElementById("next");
+
+        const title = document.getElementById("title")
+        const artist = document.getElementById("artist")
+        const cover = document.getElementById("cover")
+
+        const progress = document.getElementById("progress");
+        const progressContainer = document.getElementById("progresscontainer");
+
+        const currentTime = document.getElementById("currenttime")
+        const duratione1= document.getElementById("duration")
+        
+
+        let songIndex = 0;
+        
+                  const songs = [
+        {
+            name:"Thalaivan thalaivi",
+            artist:"Santosh",
+            src:"Kenjurane_-_Thalaivan_Thalaivii.mp3",
+            cover:"https://static.moviecrow.com/movies/5356-thalaivan-thalaivii/248465-248462-tt-px214.jpeg"
+        },
+        {
+            name:"retro",
+            artist:"SaNa",
+            src:"song1.mp3.mp3",
+            cover:"https://static.moviecrow.com/gallery/20250114/240195-rero.jpg"
+        },
+        {
+            name:"Madharasi",
+            artist:"Anirudh",
+            src:"song2.mp3.mp3",
+            cover:"https://m.media-amazon.com/images/M/MV5BZTI5M2NmZWItMTNmZi00YzJmLWE0M2UtOTRkODA2NjI1NDUyXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
+    },{
+             name:"Dude",
+            artist:"Abhyankaar",
+            src:"song3.mp3.mp3",
+            cover:"https://hdmovie2.gent/uploads/posts/2025-10/1321108_poster_1760862660.jpg"
+    },{
+        
+             name:"paiya",
+            artist:"Yuvan",
+            src:"Thuli_Thuli_Mazhaiyaai.mp3",
+            cover:"https://images.filmibeat.com/img/popcorn/fan_images/11219_20100511_51031500_PAIYAA-TAMIL-MOVIE-STILLS.jpg"
+  
+    }
+    ];
+
+    function loadSong(song){
+        title.textContent=song.name;
+        artist.textContent=song.artist;
+        audio.src=song.src;
+        cover.src=song.cover;
+    }
+    loadSong(songs[songIndex])
+
+    function playSong(){
+        audio.play();
+        playbtn.textContent="⏸";
+
+    }
+
+    function pauseSong(){
+        audio.pause();
+        playbtn.textContent="▶";
+    }
+
+    playbtn.addEventListener("click",()=>{
+        if(audio.paused){
+            playSong();
+        }
+        else{
+            pauseSong();
+        }
+    });
+
+   
+    //next song
+    nextbtn.addEventListener("click",()=>{
+        songIndex++
+        if(songIndex>=songs.length){
+            songIndex=0
+        }
+        loadSong(songs[songIndex])
+           playSong();
+    })
+
+    //prev 
+    prevbtn.addEventListener("click",()=>{
+        songIndex--;
+        if(songIndex<0){
+            songIndex=songs.length-1;
+        }
+        loadSong(songs[songIndex])
+        playSong();
+    })
+    
+
+    //update progress bar
+    audio.addEventListener("timeupdate",()=>{
+        const{currentTime,duration}=audio;
+        if(duration){
+        const percent=(currentTime/duration)*100;
+        progress.style.width=percent+"%";
+    }
+
+    //current time
+     let curMin=Math.floor(audio.currentTime/60);
+     let curSec=Math.floor(audio.currentTime%60);
+     if(curSec<10)curSec="0"+curSec;
+     currenttime.textContent=`${curMin}:${curSec}`
+
+     //durationn
+      if (audio.duration) {
+     let durMin=Math.floor(audio.duration/60);
+     let durSec=Math.floor(audio.duration%60);
+     if(durSec<10)durSec="0"+durSec
+     duratione1.textContent=`${durMin}:${durSec}`
+      }
+    })
+     //progresscontainer
+     progressContainer.addEventListener("click",(e)=>{
+            const width=progressContainer.clientWidth;
+            const clickX=e.offsetX;
+            const duration=audio.duration
+            audio.currentTime=(clickX/width)*duration;
+    
+});
+
+
+     audio.addEventListener("ended",()=>{
+        nextbtn.click();
+     })
+ //rewind
+    const rewindbtn=document.getElementById("rewind");
+
+    rewindbtn.addEventListener("click",()=>{
+        audio.currentTime-=5;
+        if(audio.currentTime<0){
+            audio.currentTime=0;
+        }
+    })
+
+    const fastfor=document.getElementById("fast");
+
+    fastfor.addEventListener("click",()=>{
+        audio.currentTime+=5;
+        if(audio.currentTime > audio.duration){
+        audio.currentTime = audio.duration;
+    }
+        
+    })
+     const volumeslider=document.getElementById("volume");
+
+     volumeslider.addEventListener("input",()=>{
+        audio.volume=volumeslider.value;
+     })
+
+    </script>
+</body>
+
+</html>
